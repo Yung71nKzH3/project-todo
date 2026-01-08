@@ -1,73 +1,69 @@
-# React + TypeScript + Vite
+# 🌋 Lava Lamp Todo
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> A sleek, mindful task manager with a living background.
 
-Currently, two official plugins are available:
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Version](https://img.shields.io/badge/version-0.1.0-violet.svg)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+**Lava Lamp Todo** is a minimalist productivity app designed to be as calming as it is functional. It features a dynamic, fluid background that drifts gently while you focus on what matters.
 
-## React Compiler
+## ✨ Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+*   **Mindful Design**: Glassmorphism UI floating over a soothing, animated lava lamp background.
+*   **Zero-Friction**: Simple "Add and Check" workflow. No complex projects or tags.
+*   **Native & Fast**: Runs as a lightweight native app on Windows and Linux (Fedora/Ubuntu).
+*   **Privacy First**: All data is stored locally on your device. No clouds, no logins.
 
-## Expanding the ESLint configuration
+## 🚀 Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Windows
+1.  Go to the [Releases](../../releases) page.
+2.  Download `project-todo_x.x.x_x64-setup.exe`.
+3.  Run the installer.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Linux (Fedora/RPM)
+1.  Go to the [Releases](../../releases) page.
+2.  Download the `.rpm` package.
+3.  Install via DNF or Software Center:
+    ```bash
+    sudo dnf install ./project-todo_x.x.x_x86_64.rpm
+    ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🛠️ Development
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Built with ❤️ using **React**, **Vite**, **Tailwind CSS v4**, and **Tauri v2**.
+
+**Prerequisites**:
+*   Node.js (v20+)
+*   Rust (stable)
+
+**Setup**:
+1.  Clone the repo:
+    ```bash
+    git clone https://github.com/yourusername/project-todo.git
+    cd project-todo
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Run web dev server:
+    ```bash
+    npm run dev
+    ```
+4.  Run native dev app:
+    ```bash
+    npm run tauri dev
+    ```
+
+## 📦 Building
+
+This project uses **GitHub Actions** to automatically build releases. Just push to `main` to trigger a new build.
+
+To build manually:
+```bash
+npm run tauri build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+*Created with Gemini Antigravity*
