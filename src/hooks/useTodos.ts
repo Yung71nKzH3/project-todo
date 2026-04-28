@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 
 export interface Todo {
     id: string;
-    text: string;
+    title: string;
+    description?: string;
     completed: boolean;
     createdAt: number;
+    completedAt?: number;
 }
 
 const STORAGE_KEY = 'todo-app-data';
@@ -14,7 +16,12 @@ export function useTodos() {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
             try {
-                return JSON.parse(saved);
+                const parsed = JSON.parse(saved);
+                // Migration: handle old format where 'text' was used instead of 'title'
+                return parsed.map((todo: any) => ({
+                    ...todo,
+                    title: todo.title || todo.text || '',
+                }));
             } catch {
                 return [];
             }
@@ -26,12 +33,13 @@ export function useTodos() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
     }, [todos]);
 
-    const addTodo = (text: string) => {
-        if (!text.trim()) return;
+    const addTodo = (title: string, description?: string) => {
+        if (!title.trim()) return;
 
         const newTodo: Todo = {
             id: crypto.randomUUID(),
-            text: text.trim(),
+            title: title.trim(),
+            description: description?.trim(),
             completed: false,
             createdAt: Date.now(),
         };
@@ -41,7 +49,13 @@ export function useTodos() {
 
     const toggleTodo = (id: string) => {
         setTodos(prev => prev.map(t =>
-            t.id === id ? { ...t, completed: !t.completed } : t
+            t.id === id 
+                ? { 
+                    ...t, 
+                    completed: !t.completed, 
+                    completedAt: !t.completed ? Date.now() : undefined 
+                  } 
+                : t
         ));
     };
 
