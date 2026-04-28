@@ -12,11 +12,20 @@ import { CalendarView } from './CalendarView';
 import { SubscriptionsView } from './SubscriptionsView';
 import { ThemeToggle } from './ThemeToggle';
 import { ConfirmationModal } from './ConfirmationModal';
+import { useNotifications } from '../hooks/useNotifications';
+import { useAutostart } from '../hooks/useAutostart';
+import { Power } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 export function TodoApp() {
     const { todos, addTodo, toggleTodo, removeTodo, clearCompleted } = useTodos();
     const { subscriptions } = useSubscriptions();
     const { events, addEvent, removeEvent } = useEvents();
+    const { enabled: autostartEnabled, toggleAutostart } = useAutostart();
+    
+    // Initialize Notification System
+    useNotifications(todos, subscriptions, events);
+    
     const [currentView, setCurrentView] = useState<View>('tasks');
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
@@ -34,14 +43,42 @@ export function TodoApp() {
                 return <AnalyticsView todos={todos} />;
             case 'settings':
                 return (
-                    <div className="text-center py-12">
-                        <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Settings</h2>
-                        <p className="text-gray-500 dark:text-gray-400">Make your experience personal. ✨</p>
+                    <div className="text-center py-6 space-y-6">
+                        <h2 className="text-xl font-bold text-gray-800 dark:text-white">Settings</h2>
                         
-                        <div className="mt-12 space-y-4">
+                        <div className="space-y-4">
+                            {/* Autostart Toggle */}
+                            <div className="p-6 bg-white/40 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-3xl flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className={cn(
+                                        "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                                        autostartEnabled ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600" : "bg-gray-100 dark:bg-white/5 text-gray-400"
+                                    )}>
+                                        <Power size={20} />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="font-bold text-gray-800 dark:text-white">Launch on Startup</p>
+                                        <p className="text-xs text-gray-500">App starts with your computer</p>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={toggleAutostart}
+                                    className={cn(
+                                        "w-12 h-6 rounded-full relative transition-colors duration-300",
+                                        autostartEnabled ? "bg-emerald-500" : "bg-gray-300 dark:bg-white/10"
+                                    )}
+                                >
+                                    <motion.div 
+                                        animate={{ x: autostartEnabled ? 24 : 2 }}
+                                        className="absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow-sm"
+                                    />
+                                </button>
+                            </div>
+
+                            {/* Danger Zone */}
                             <div className="p-6 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 rounded-3xl">
                                 <h3 className="text-sm font-bold text-red-600 dark:text-red-400 uppercase tracking-widest mb-2">Danger Zone</h3>
-                                <p className="text-xs text-red-500 dark:text-red-400/60 mb-6">These actions cannot be undone. Please be careful.</p>
+                                <p className="text-xs text-red-500 dark:text-red-400/60 mb-6">These actions cannot be undone.</p>
                                 <button 
                                     onClick={() => setIsConfirmOpen(true)}
                                     className="w-full px-6 py-3 bg-red-500 text-white rounded-2xl font-bold hover:bg-red-600 transition-colors shadow-lg shadow-red-200 dark:shadow-none"
