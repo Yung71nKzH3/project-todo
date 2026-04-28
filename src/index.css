@@ -3,22 +3,64 @@
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
 }
 
 :root {
-  --background: hsl(0 0% 100%);
-  --foreground: hsl(222.2 84% 4.9%);
+  --background: hsl(220 30% 98%);
+  --foreground: hsl(224 71% 4%);
+  --card: hsla(0, 0%, 100%, 0.4);
+  --card-foreground: hsl(224 71% 4%);
+  --border: hsla(0, 0%, 100%, 0.6);
+  --muted: hsl(220 14% 96%);
+  --muted-foreground: hsl(220 10% 40%); /* Darker for light mode */
+  
+  /* Primary brand colors */
+  --violet-primary: hsl(262 83% 58%);
+  --violet-secondary: hsl(263 70% 50%);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: hsl(222.2 84% 4.9%);
-    --foreground: hsl(210 40% 98%);
-  }
+.dark {
+  --background: hsl(224 71% 4%);
+  --foreground: hsl(210 20% 98%);
+  --card: hsla(224, 71%, 8%, 0.6); /* Slightly more opaque for better contrast */
+  --card-foreground: hsl(210 20% 98%);
+  --border: hsla(210, 20%, 98%, 0.15);
+  --muted: hsl(224 71% 12%);
+  --muted-foreground: hsl(215 20% 80%); /* Brighter for dark mode */
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: 'Inter', system-ui, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.2);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.4);
+}
+
+/* Glassmorphism helpers */
+.glass {
+  background: var(--card);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
 }

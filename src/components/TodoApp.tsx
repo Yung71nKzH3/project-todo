@@ -1,159 +1,154 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { LavaLampBackground } from './LavaLampBackground';
-import { Plus, Trash2, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTodos } from '../hooks/useTodos';
+import { useSubscriptions } from '../hooks/useSubscriptions';
+import { useEvents } from '../hooks/useEvents';
+import { Navigation, type View } from './Navigation';
+import { TasksView } from './TasksView';
+import { HistoryView } from './HistoryView';
+import { AnalyticsView } from './AnalyticsView';
+import { CalendarView } from './CalendarView';
+import { SubscriptionsView } from './SubscriptionsView';
+import { ThemeToggle } from './ThemeToggle';
+import { ConfirmationModal } from './ConfirmationModal';
+import { useNotifications } from '../hooks/useNotifications';
+import { useAutostart } from '../hooks/useAutostart';
+import { Power } from 'lucide-react';
 import { cn } from '../lib/utils';
 
-interface Todo {
-    id: string;
-    text: string;
-    completed: boolean;
-    createdAt: number;
-}
-
 export function TodoApp() {
-    const [todos, setTodos] = useState<Todo[]>(() => {
-        const saved = localStorage.getItem('todo-app-data');
-        if (saved) {
-            try {
-                return JSON.parse(saved);
-            } catch (e) {
-                return [];
-            }
+    const { todos, addTodo, toggleTodo, removeTodo, clearCompleted } = useTodos();
+    const { subscriptions } = useSubscriptions();
+    const { events, addEvent, removeEvent } = useEvents();
+    const { enabled: autostartEnabled, toggleAutostart } = useAutostart();
+    
+    // Initialize Notification System
+    useNotifications(todos, subscriptions, events);
+    
+    const [currentView, setCurrentView] = useState<View>('tasks');
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+    const renderView = () => {
+        switch (currentView) {
+            case 'tasks':
+                return <TasksView todos={todos} addTodo={addTodo} toggleTodo={toggleTodo} removeTodo={removeTodo} />;
+            case 'calendar':
+                return <CalendarView todos={todos} subscriptions={subscriptions} events={events} addEvent={addEvent} removeEvent={removeEvent} />;
+            case 'subscriptions':
+                return <SubscriptionsView />;
+            case 'history':
+                return <HistoryView todos={todos} subscriptions={subscriptions} removeTodo={removeTodo} />;
+            case 'analytics':
+                return <AnalyticsView todos={todos} />;
+            case 'settings':
+                return (
+                    <div className="text-center py-6 space-y-6">
+                        <h2 className="text-xl font-bold text-foreground">Settings</h2>
+                        
+                        <div className="space-y-4">
+                            {/* Autostart Toggle */}
+                            <div className="p-6 bg-card border border-border rounded-3xl flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className={cn(
+                                        "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                                        autostartEnabled ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600" : "bg-muted text-muted-foreground"
+                                    )}>
+                                        <Power size={20} />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="font-bold text-foreground">Launch on Startup</p>
+                                        <p className="text-xs text-muted-foreground">App starts with your computer</p>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={toggleAutostart}
+                                    className={cn(
+                                        "w-12 h-6 rounded-full relative transition-colors duration-300",
+                                        autostartEnabled ? "bg-emerald-500" : "bg-gray-300 dark:bg-white/10"
+                                    )}
+                                >
+                                    <motion.div 
+                                        animate={{ x: autostartEnabled ? 24 : 2 }}
+                                        className="absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow-sm"
+                                    />
+                                </button>
+                            </div>
+
+                            {/* Danger Zone */}
+                            <div className="p-6 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 rounded-3xl">
+                                <h3 className="text-sm font-bold text-red-600 dark:text-red-400 uppercase tracking-widest mb-2">Danger Zone</h3>
+                                <p className="text-xs text-red-500 dark:text-red-400/60 mb-6">These actions cannot be undone.</p>
+                                <button 
+                                    onClick={() => setIsConfirmOpen(true)}
+                                    className="w-full px-6 py-3 bg-red-500 text-white rounded-2xl font-bold hover:bg-red-600 transition-colors shadow-lg shadow-red-200 dark:shadow-none"
+                                >
+                                    Clear All Completed Tasks
+                                </button>
+                            </div>
+                        </div>
+
+                        <ConfirmationModal 
+                            isOpen={isConfirmOpen}
+                            onClose={() => setIsConfirmOpen(false)}
+                            onConfirm={clearCompleted}
+                            title="Clear Completed Tasks?"
+                            message="This will permanently remove all tasks you have already finished from the log. This action cannot be undone."
+                            confirmText="Yes, Clear Them"
+                        />
+                    </div>
+                );
+            default:
+                return null;
         }
-        return [];
-    });
-    const [inputValue, setInputValue] = useState('');
-
-    useEffect(() => {
-        localStorage.setItem('todo-app-data', JSON.stringify(todos));
-    }, [todos]);
-
-    const addTodo = (e?: React.FormEvent) => {
-        e?.preventDefault();
-        if (!inputValue.trim()) return;
-
-        const newTodo: Todo = {
-            id: crypto.randomUUID(),
-            text: inputValue.trim(),
-            completed: false,
-            createdAt: Date.now(),
-        };
-
-        setTodos([newTodo, ...todos]);
-        setInputValue('');
-    };
-
-    const toggleTodo = (id: string) => {
-        setTodos(todos.map(t =>
-            t.id === id ? { ...t, completed: !t.completed } : t
-        ));
-    };
-
-    const removeTodo = (id: string) => {
-        setTodos(todos.filter(t => t.id !== id));
     };
 
     return (
-        <div className="min-h-screen relative flex items-center justify-center p-4 isolate overflow-hidden">
+        <div className="min-h-screen relative flex items-center justify-center p-4 isolate overflow-hidden pb-32">
             <LavaLampBackground />
 
             <div className="w-full max-w-md z-10">
                 <motion.div
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    className="bg-white/40 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/60"
+                    className="bg-card backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-border"
                 >
                     <div className="p-8">
-                        <h1 className="text-3xl font-bold text-gray-800 mb-2 drop-shadow-sm">My Tasks</h1>
-                        <p className="text-gray-600 mb-8 font-medium">Let's get things done! ✨</p>
+                        <header className="mb-8 flex justify-between items-start">
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2 drop-shadow-sm">
+                                    {currentView === 'history' ? 'Activity Log' : currentView.charAt(0).toUpperCase() + currentView.slice(1)}
+                                </h1>
+                                <p className="text-muted-foreground font-medium">
+                                    {currentView === 'tasks' && "Let's get things done! ✨"}
+                                    {currentView === 'calendar' && "Your schedule at a glance. 📅"}
+                                    {currentView === 'subscriptions' && "Keep track of your recurring costs. 💸"}
+                                    {currentView === 'history' && "A timeline of your achievements. 🏆"}
+                                    {currentView === 'analytics' && "Your productivity at a glance. 📊"}
+                                    {currentView === 'settings' && "Make it yours. ⚙️"}
+                                </p>
+                            </div>
+                            <ThemeToggle />
+                        </header>
 
-                        <form onSubmit={addTodo} className="relative mb-8 group">
-                            <input
-                                type="text"
-                                value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
-                                placeholder="Add a new task..."
-                                className="w-full pl-6 pr-14 py-4 bg-white/50 backdrop-blur-sm rounded-2xl border-none outline-none focus:ring-2 focus:ring-violet-500/50 transition-all font-medium text-gray-700 placeholder:text-gray-500 shadow-inner"
-                            />
-                            <button
-                                type="submit"
-                                disabled={!inputValue.trim()}
-                                className="absolute right-2 top-2 bottom-2 aspect-square bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:hover:bg-violet-600 text-white rounded-xl flex items-center justify-center transition-all shadow-lg shadow-violet-200"
-                            >
-                                <Plus size={20} className="stroke-[3]" />
-                            </button>
-                        </form>
-
-                        <div className="space-y-3">
-                            <AnimatePresence mode='popLayout'>
-                                {todos.length === 0 && (
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.9 }}
-                                        className="text-center py-12"
-                                    >
-                                        <div className="w-16 h-16 bg-white/50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
-                                            <Check size={32} />
-                                        </div>
-                                        <p className="text-gray-500">No tasks yet. Add one above!</p>
-                                    </motion.div>
-                                )}
-
-                                {todos.map((todo) => (
-                                    <motion.div
-                                        key={todo.id}
-                                        layout
-                                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-                                        className={cn(
-                                            "group flex items-center gap-4 p-4 rounded-2xl transition-all border backdrop-blur-sm",
-                                            todo.completed
-                                                ? "bg-gray-50/50 border-transparent"
-                                                : "bg-white/60 border-white/40 shadow-sm hover:shadow-md hover:bg-white/80"
-                                        )}
-                                    >
-                                        <button
-                                            onClick={() => toggleTodo(todo.id)}
-                                            className={cn(
-                                                "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors flex-shrink-0",
-                                                todo.completed
-                                                    ? "bg-violet-500 border-violet-500 text-white"
-                                                    : "border-gray-400 text-transparent hover:border-violet-500"
-                                            )}
-                                        >
-                                            <Check size={14} strokeWidth={3} />
-                                        </button>
-
-                                        <span
-                                            className={cn(
-                                                "flex-1 font-medium transition-all truncate",
-                                                todo.completed ? "text-gray-500 line-through" : "text-gray-800"
-                                            )}
-                                        >
-                                            {todo.text}
-                                        </span>
-
-                                        <button
-                                            onClick={() => removeTodo(todo.id)}
-                                            className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-all focus:opacity-100"
-                                            aria-label="Delete task"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </motion.div>
-                                ))}
+                        <div className="min-h-[400px]">
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={currentView}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    {renderView()}
+                                </motion.div>
                             </AnimatePresence>
                         </div>
                     </div>
-
-                    <div className="bg-white/30 p-4 text-center text-xs text-gray-500 border-t border-white/20">
-                        {todos.filter(t => !t.completed).length} items left
-                    </div>
                 </motion.div>
             </div>
+
+            <Navigation currentView={currentView} setView={setCurrentView} />
         </div>
     );
 }
