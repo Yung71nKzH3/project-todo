@@ -6,6 +6,8 @@
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
 }
 
 :root {
@@ -14,6 +16,8 @@
   --card: hsla(0, 0%, 100%, 0.4);
   --card-foreground: hsl(224 71% 4%);
   --border: hsla(0, 0%, 100%, 0.6);
+  --muted: hsl(220 14% 96%);
+  --muted-foreground: hsl(220 10% 40%); /* Darker for light mode */
   
   /* Primary brand colors */
   --violet-primary: hsl(262 83% 58%);
@@ -23,9 +27,11 @@
 .dark {
   --background: hsl(224 71% 4%);
   --foreground: hsl(210 20% 98%);
-  --card: hsla(224, 71%, 10%, 0.4);
+  --card: hsla(224, 71%, 8%, 0.6); /* Slightly more opaque for better contrast */
   --card-foreground: hsl(210 20% 98%);
-  --border: hsla(210, 20%, 98%, 0.1);
+  --border: hsla(210, 20%, 98%, 0.15);
+  --muted: hsl(224 71% 12%);
+  --muted-foreground: hsl(215 20% 80%); /* Brighter for dark mode */
 }
 
 body {

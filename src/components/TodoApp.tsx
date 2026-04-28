@@ -44,21 +44,21 @@ export function TodoApp() {
             case 'settings':
                 return (
                     <div className="text-center py-6 space-y-6">
-                        <h2 className="text-xl font-bold text-gray-800 dark:text-white">Settings</h2>
+                        <h2 className="text-xl font-bold text-foreground">Settings</h2>
                         
                         <div className="space-y-4">
                             {/* Autostart Toggle */}
-                            <div className="p-6 bg-white/40 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-3xl flex items-center justify-between">
+                            <div className="p-6 bg-card border border-border rounded-3xl flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className={cn(
                                         "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
-                                        autostartEnabled ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600" : "bg-gray-100 dark:bg-white/5 text-gray-400"
+                                        autostartEnabled ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600" : "bg-muted text-muted-foreground"
                                     )}>
                                         <Power size={20} />
                                     </div>
                                     <div className="text-left">
-                                        <p className="font-bold text-gray-800 dark:text-white">Launch on Startup</p>
-                                        <p className="text-xs text-gray-500">App starts with your computer</p>
+                                        <p className="font-bold text-foreground">Launch on Startup</p>
+                                        <p className="text-xs text-muted-foreground">App starts with your computer</p>
                                     </div>
                                 </div>
                                 <button 
@@ -119,7 +119,7 @@ export function TodoApp() {
                                 <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2 drop-shadow-sm">
                                     {currentView === 'history' ? 'Activity Log' : currentView.charAt(0).toUpperCase() + currentView.slice(1)}
                                 </h1>
-                                <p className="text-gray-600 dark:text-gray-400 font-medium">
+                                <p className="text-muted-foreground font-medium">
                                     {currentView === 'tasks' && "Let's get things done! ✨"}
                                     {currentView === 'calendar' && "Your schedule at a glance. 📅"}
                                     {currentView === 'subscriptions' && "Keep track of your recurring costs. 💸"}

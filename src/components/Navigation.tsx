@@ -38,13 +38,13 @@ export function Navigation({ currentView, setView }: NavigationProps) {
                                 "relative flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all",
                                 isActive 
                                     ? "text-violet-600 dark:text-violet-400" 
-                                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/40 dark:hover:bg-white/5"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-white/40 dark:hover:bg-white/5"
                             )}
                         >
                             {isActive && (
                                 <motion.div
                                     layoutId="nav-bg"
-                                    className="absolute inset-0 bg-white/80 dark:bg-white/10 rounded-2xl -z-10 shadow-sm"
+                                    className="absolute inset-0 bg-card rounded-2xl -z-10 shadow-sm"
                                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                 />
                             )}
