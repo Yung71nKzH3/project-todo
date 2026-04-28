@@ -14,7 +14,7 @@ export function Navigation({ currentView, setView }: NavigationProps) {
         { id: 'tasks', icon: ListTodo, label: 'Tasks' },
         { id: 'calendar', icon: Calendar, label: 'Calendar' },
         { id: 'subscriptions', icon: CreditCard, label: 'Subs' },
-        { id: 'history', icon: History, label: 'History' },
+        { id: 'history', icon: History, label: 'Log' },
         { id: 'analytics', icon: BarChart3, label: 'Stats' },
         { id: 'settings', icon: Settings, label: 'Settings' },
     ] as const;
@@ -24,7 +24,7 @@ export function Navigation({ currentView, setView }: NavigationProps) {
             <motion.div 
                 initial={{ y: 50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                className="flex items-center justify-around p-2 bg-white/40 backdrop-blur-2xl rounded-2xl border border-white/60 shadow-2xl shadow-violet-500/10"
+                className="flex items-center justify-around p-2 bg-white/60 dark:bg-gray-900/60 backdrop-blur-2xl rounded-3xl border border-white/60 dark:border-white/10 shadow-2xl shadow-violet-500/10"
             >
                 {navItems.map((item) => {
                     const isActive = currentView === item.id;
@@ -35,14 +35,16 @@ export function Navigation({ currentView, setView }: NavigationProps) {
                             key={item.id}
                             onClick={() => setView(item.id)}
                             className={cn(
-                                "relative flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all",
-                                isActive ? "text-violet-600" : "text-gray-500 hover:text-gray-700 hover:bg-white/30"
+                                "relative flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all",
+                                isActive 
+                                    ? "text-violet-600 dark:text-violet-400" 
+                                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/40 dark:hover:bg-white/5"
                             )}
                         >
                             {isActive && (
                                 <motion.div
                                     layoutId="nav-bg"
-                                    className="absolute inset-0 bg-white/60 rounded-xl -z-10 shadow-sm"
+                                    className="absolute inset-0 bg-white/80 dark:bg-white/10 rounded-2xl -z-10 shadow-sm"
                                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                 />
                             )}

@@ -34,9 +34,31 @@ export function CalendarView({ todos, subscriptions, events, addEvent, removeEve
         return eachDayOfInterval({ start, end });
     }, [currentMonth]);
 
+    // Helper to check if a subscription falls on a given day
+    const isSubscriptionDay = (sub: Subscription, day: Date) => {
+        const startDate = new Date(sub.nextBillingDate);
+        if (isSameDay(startDate, day)) return true;
+        
+        // Project forward based on frequency
+        if (day < startDate) return false;
+
+        const monthsDiff = (day.getFullYear() - startDate.getFullYear()) * 12 + (day.getMonth() - startDate.getMonth());
+        
+        if (sub.frequency === 'monthly') {
+            return day.getDate() === startDate.getDate();
+        }
+        if (sub.frequency === 'quarterly') {
+            return day.getDate() === startDate.getDate() && monthsDiff % 3 === 0;
+        }
+        if (sub.frequency === 'yearly') {
+            return day.getDate() === startDate.getDate() && day.getMonth() === startDate.getMonth();
+        }
+        return false;
+    };
+
     const itemsForSelectedDate = useMemo(() => {
         const dayTodos = todos.filter(t => t.dueDate && isSameDay(new Date(t.dueDate), selectedDate));
-        const daySubs = subscriptions.filter(s => isSameDay(new Date(s.nextBillingDate), selectedDate));
+        const daySubs = subscriptions.filter(s => isSubscriptionDay(s, selectedDate));
         const dayEvents = events.filter(e => isSameDay(new Date(e.startDate), selectedDate));
         
         return { todos: dayTodos, subs: daySubs, events: dayEvents };
@@ -81,7 +103,7 @@ export function CalendarView({ todos, subscriptions, events, addEvent, removeEve
                 <div className="grid grid-cols-7 gap-1">
                     {days.map((day, i) => {
                         const hasTodo = todos.some(t => t.dueDate && isSameDay(new Date(t.dueDate), day));
-                        const hasSub = subscriptions.some(s => isSameDay(new Date(s.nextBillingDate), day));
+                        const hasSub = subscriptions.some(s => isSubscriptionDay(s, day));
                         const hasEvent = events.some(e => isSameDay(new Date(e.startDate), day));
                         const isSelected = isSameDay(day, selectedDate);
                         const isCurrentMonth = isSameMonth(day, currentMonth);

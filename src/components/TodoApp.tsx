@@ -11,12 +11,14 @@ import { AnalyticsView } from './AnalyticsView';
 import { CalendarView } from './CalendarView';
 import { SubscriptionsView } from './SubscriptionsView';
 import { ThemeToggle } from './ThemeToggle';
+import { ConfirmationModal } from './ConfirmationModal';
 
 export function TodoApp() {
     const { todos, addTodo, toggleTodo, removeTodo, clearCompleted } = useTodos();
     const { subscriptions } = useSubscriptions();
     const { events, addEvent, removeEvent } = useEvents();
     const [currentView, setCurrentView] = useState<View>('tasks');
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
     const renderView = () => {
         switch (currentView) {
@@ -27,20 +29,36 @@ export function TodoApp() {
             case 'subscriptions':
                 return <SubscriptionsView />;
             case 'history':
-                return <HistoryView todos={todos} removeTodo={removeTodo} />;
+                return <HistoryView todos={todos} subscriptions={subscriptions} removeTodo={removeTodo} />;
             case 'analytics':
                 return <AnalyticsView todos={todos} />;
             case 'settings':
                 return (
                     <div className="text-center py-12">
                         <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Settings</h2>
-                        <p className="text-gray-500 dark:text-gray-400">More settings coming soon! ✨</p>
-                        <button 
-                            onClick={clearCompleted}
-                            className="mt-8 px-6 py-3 bg-red-500 text-white rounded-2xl font-bold hover:bg-red-600 transition-colors shadow-lg shadow-red-200"
-                        >
-                            Clear All Completed
-                        </button>
+                        <p className="text-gray-500 dark:text-gray-400">Make your experience personal. ✨</p>
+                        
+                        <div className="mt-12 space-y-4">
+                            <div className="p-6 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 rounded-3xl">
+                                <h3 className="text-sm font-bold text-red-600 dark:text-red-400 uppercase tracking-widest mb-2">Danger Zone</h3>
+                                <p className="text-xs text-red-500 dark:text-red-400/60 mb-6">These actions cannot be undone. Please be careful.</p>
+                                <button 
+                                    onClick={() => setIsConfirmOpen(true)}
+                                    className="w-full px-6 py-3 bg-red-500 text-white rounded-2xl font-bold hover:bg-red-600 transition-colors shadow-lg shadow-red-200 dark:shadow-none"
+                                >
+                                    Clear All Completed Tasks
+                                </button>
+                            </div>
+                        </div>
+
+                        <ConfirmationModal 
+                            isOpen={isConfirmOpen}
+                            onClose={() => setIsConfirmOpen(false)}
+                            onConfirm={clearCompleted}
+                            title="Clear Completed Tasks?"
+                            message="This will permanently remove all tasks you have already finished from the log. This action cannot be undone."
+                            confirmText="Yes, Clear Them"
+                        />
                     </div>
                 );
             default:
@@ -62,13 +80,13 @@ export function TodoApp() {
                         <header className="mb-8 flex justify-between items-start">
                             <div>
                                 <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2 drop-shadow-sm">
-                                    {currentView.charAt(0).toUpperCase() + currentView.slice(1)}
+                                    {currentView === 'history' ? 'Activity Log' : currentView.charAt(0).toUpperCase() + currentView.slice(1)}
                                 </h1>
                                 <p className="text-gray-600 dark:text-gray-400 font-medium">
                                     {currentView === 'tasks' && "Let's get things done! ✨"}
                                     {currentView === 'calendar' && "Your schedule at a glance. 📅"}
                                     {currentView === 'subscriptions' && "Keep track of your recurring costs. 💸"}
-                                    {currentView === 'history' && "Look how far you've come! 🏆"}
+                                    {currentView === 'history' && "A timeline of your achievements. 🏆"}
                                     {currentView === 'analytics' && "Your productivity at a glance. 📊"}
                                     {currentView === 'settings' && "Make it yours. ⚙️"}
                                 </p>
