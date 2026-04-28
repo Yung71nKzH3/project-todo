@@ -1,57 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { LavaLampBackground } from './LavaLampBackground';
 import { Plus, Trash2, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
-
-interface Todo {
-    id: string;
-    text: string;
-    completed: boolean;
-    createdAt: number;
-}
+import { useTodos } from '../hooks/useTodos';
 
 export function TodoApp() {
-    const [todos, setTodos] = useState<Todo[]>(() => {
-        const saved = localStorage.getItem('todo-app-data');
-        if (saved) {
-            try {
-                return JSON.parse(saved);
-            } catch (e) {
-                return [];
-            }
-        }
-        return [];
-    });
+    const { todos, addTodo, toggleTodo, removeTodo, clearCompleted } = useTodos();
     const [inputValue, setInputValue] = useState('');
 
-    useEffect(() => {
-        localStorage.setItem('todo-app-data', JSON.stringify(todos));
-    }, [todos]);
-
-    const addTodo = (e?: React.FormEvent) => {
+    const handleAddTodo = (e?: React.FormEvent) => {
         e?.preventDefault();
         if (!inputValue.trim()) return;
-
-        const newTodo: Todo = {
-            id: crypto.randomUUID(),
-            text: inputValue.trim(),
-            completed: false,
-            createdAt: Date.now(),
-        };
-
-        setTodos([newTodo, ...todos]);
+        addTodo(inputValue);
         setInputValue('');
-    };
-
-    const toggleTodo = (id: string) => {
-        setTodos(todos.map(t =>
-            t.id === id ? { ...t, completed: !t.completed } : t
-        ));
-    };
-
-    const removeTodo = (id: string) => {
-        setTodos(todos.filter(t => t.id !== id));
     };
 
     return (
@@ -68,7 +30,7 @@ export function TodoApp() {
                         <h1 className="text-3xl font-bold text-gray-800 mb-2 drop-shadow-sm">My Tasks</h1>
                         <p className="text-gray-600 mb-8 font-medium">Let's get things done! ✨</p>
 
-                        <form onSubmit={addTodo} className="relative mb-8 group">
+                        <form onSubmit={handleAddTodo} className="relative mb-8 group">
                             <input
                                 type="text"
                                 value={inputValue}
@@ -149,8 +111,16 @@ export function TodoApp() {
                         </div>
                     </div>
 
-                    <div className="bg-white/30 p-4 text-center text-xs text-gray-500 border-t border-white/20">
-                        {todos.filter(t => !t.completed).length} items left
+                    <div className="bg-white/30 p-4 px-6 flex items-center justify-between text-xs text-gray-500 border-t border-white/20">
+                        <span>{todos.filter(t => !t.completed).length} items left</span>
+                        {todos.some(t => t.completed) && (
+                            <button
+                                onClick={clearCompleted}
+                                className="hover:text-violet-600 transition-colors font-medium"
+                            >
+                                Clear Completed
+                            </button>
+                        )}
                     </div>
                 </motion.div>
             </div>
