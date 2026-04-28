@@ -70,3 +70,6 @@ Built with **React 19**, **Tauri v2**, **Tailwind CSS v4**, and **Framer Motion*
 
 ---
 *Created by Gemini Antigravity*
+
+### 🎨 Attributions
+- <a href="https://www.flaticon.com/free-icons/pin" title="pin icons">Pin icons created by Pixel perfect - Flaticon</a>
