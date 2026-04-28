@@ -7,6 +7,7 @@ export interface Todo {
     completed: boolean;
     createdAt: number;
     completedAt?: number;
+    dueDate?: number;
 }
 
 const STORAGE_KEY = 'todo-app-data';
@@ -17,11 +18,14 @@ export function useTodos() {
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
-                // Migration: handle old format where 'text' was used instead of 'title'
+                if (!Array.isArray(parsed)) return [];
                 return parsed.map((todo: any) => ({
                     ...todo,
+                    id: todo.id || crypto.randomUUID(),
                     title: todo.title || todo.text || '',
-                }));
+                    completed: todo.completed || false,
+                    createdAt: todo.createdAt || Date.now(),
+                })) as Todo[];
             } catch {
                 return [];
             }
@@ -33,7 +37,7 @@ export function useTodos() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
     }, [todos]);
 
-    const addTodo = (title: string, description?: string) => {
+    const addTodo = (title: string, description?: string, dueDate?: number) => {
         if (!title.trim()) return;
 
         const newTodo: Todo = {
@@ -42,6 +46,7 @@ export function useTodos() {
             description: description?.trim(),
             completed: false,
             createdAt: Date.now(),
+            dueDate,
         };
 
         setTodos([newTodo, ...todos]);
