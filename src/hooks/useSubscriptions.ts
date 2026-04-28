@@ -5,8 +5,10 @@ export interface Subscription {
     name: string;
     amount: number;
     currency: string;
-    frequency: 'monthly' | 'yearly';
+    frequency: 'monthly' | 'quarterly' | 'yearly';
     nextBillingDate: number;
+    lastChecked: number;
+    url?: string;
     category?: string;
     createdAt: number;
 }
@@ -18,7 +20,13 @@ export function useSubscriptions() {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
             try {
-                return JSON.parse(saved);
+                const parsed = JSON.parse(saved);
+                // Migration: add lastChecked if missing
+                return parsed.map((s: any) => ({
+                    ...s,
+                    lastChecked: s.lastChecked || s.createdAt || Date.now(),
+                    frequency: s.frequency || 'monthly'
+                }));
             } catch {
                 return [];
             }
@@ -30,11 +38,12 @@ export function useSubscriptions() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(subscriptions));
     }, [subscriptions]);
 
-    const addSubscription = (sub: Omit<Subscription, 'id' | 'createdAt'>) => {
+    const addSubscription = (sub: Omit<Subscription, 'id' | 'createdAt' | 'lastChecked'>) => {
         const newSub: Subscription = {
             ...sub,
             id: crypto.randomUUID(),
             createdAt: Date.now(),
+            lastChecked: Date.now(),
         };
         setSubscriptions([newSub, ...subscriptions]);
     };
@@ -44,13 +53,18 @@ export function useSubscriptions() {
     };
 
     const updateSubscription = (id: string, updates: Partial<Subscription>) => {
-        setSubscriptions(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+        setSubscriptions(prev => prev.map(s => s.id === id ? { ...s, ...updates, lastChecked: Date.now() } : s));
+    };
+
+    const markAsChecked = (id: string) => {
+        setSubscriptions(prev => prev.map(s => s.id === id ? { ...s, lastChecked: Date.now() } : s));
     };
 
     return {
         subscriptions,
         addSubscription,
         removeSubscription,
-        updateSubscription
+        updateSubscription,
+        markAsChecked
     };
 }

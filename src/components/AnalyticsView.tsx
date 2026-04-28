@@ -15,6 +15,14 @@ export function AnalyticsView({ todos }: AnalyticsViewProps) {
         const completed = todos.filter(t => t.completed);
         const pending = todos.filter(t => !t.completed);
         
+        // On-time stats
+        const onTime = completed.filter(t => {
+            if (!t.dueDate || !t.completedAt) return true; // If no due date, it's never late
+            return t.completedAt <= t.dueDate;
+        });
+
+        const late = completed.length - onTime.length;
+        
         // Tasks by day
         const dayMap: Record<string, number> = {};
         todos.forEach(t => {
@@ -36,13 +44,20 @@ export function AnalyticsView({ todos }: AnalyticsViewProps) {
             { name: 'Pending', value: pending.length, color: '#cbd5e1' }
         ];
 
+        const punctualityData = [
+            { name: 'On-time', value: onTime.length, color: '#10b981' },
+            { name: 'Late', value: late, color: '#ef4444' }
+        ];
+
         return {
             total: todos.length,
             completed: completed.length,
             pending: pending.length,
             avgCompletionTime: avgCompletionTime.toFixed(1),
+            onTimeRate: completed.length > 0 ? Math.round((onTime.length / completed.length) * 100) : 100,
             chartData,
-            pieData
+            pieData,
+            punctualityData
         };
     }, [todos]);
 
@@ -52,21 +67,21 @@ export function AnalyticsView({ todos }: AnalyticsViewProps) {
                 <motion.div 
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="bg-white/40 backdrop-blur-md p-4 rounded-2xl border border-white/60 text-center"
+                    className="bg-white/40 dark:bg-white/5 backdrop-blur-md p-4 rounded-2xl border border-white/60 dark:border-white/10 text-center"
                 >
-                    <p className="text-xs font-bold text-gray-500 uppercase">Completion Rate</p>
-                    <p className="text-2xl font-bold text-violet-600">
-                        {stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0}%
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">On-Time Rate</p>
+                    <p className="text-2xl font-bold text-emerald-500">
+                        {stats.onTimeRate}%
                     </p>
                 </motion.div>
                 <motion.div 
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.1 }}
-                    className="bg-white/40 backdrop-blur-md p-4 rounded-2xl border border-white/60 text-center"
+                    className="bg-white/40 dark:bg-white/5 backdrop-blur-md p-4 rounded-2xl border border-white/60 dark:border-white/10 text-center"
                 >
-                    <p className="text-xs font-bold text-gray-500 uppercase">Avg. Time</p>
-                    <p className="text-2xl font-bold text-violet-600">{stats.avgCompletionTime}h</p>
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Avg. Time</p>
+                    <p className="text-2xl font-bold text-violet-600 dark:text-violet-400">{stats.avgCompletionTime}h</p>
                 </motion.div>
             </div>
 
@@ -74,14 +89,14 @@ export function AnalyticsView({ todos }: AnalyticsViewProps) {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="bg-white/40 backdrop-blur-md p-6 rounded-3xl border border-white/60 h-[250px]"
+                className="bg-white/40 dark:bg-white/5 backdrop-blur-md p-6 rounded-3xl border border-white/60 dark:border-white/10 h-[250px]"
             >
-                <p className="text-sm font-bold text-gray-700 mb-4">Task Creation Activity</p>
+                <p className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4">Task Activity</p>
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={stats.chartData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} opacity={0.1} />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
                         <Tooltip 
                             contentStyle={{ backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
                         />
@@ -90,41 +105,43 @@ export function AnalyticsView({ todos }: AnalyticsViewProps) {
                 </ResponsiveContainer>
             </motion.div>
 
-            <motion.div 
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="bg-white/40 backdrop-blur-md p-6 rounded-3xl border border-white/60 flex items-center justify-between"
-            >
-                <div className="w-1/2 h-[120px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={stats.pieData}
-                                innerRadius={35}
-                                outerRadius={50}
-                                paddingAngle={5}
-                                dataKey="value"
-                            >
-                                {stats.pieData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.color} />
-                                ))}
-                            </Pie>
-                        </PieChart>
-                    </ResponsiveContainer>
-                </div>
-                <div className="w-1/2 space-y-2">
-                    <p className="text-sm font-bold text-gray-700">Distribution</p>
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-violet-500" />
-                        <span className="text-xs text-gray-600">{stats.completed} Done</span>
+            <div className="grid grid-cols-2 gap-4">
+                <motion.div 
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="bg-white/40 dark:bg-white/5 backdrop-blur-md p-4 rounded-3xl border border-white/60 dark:border-white/10 flex flex-col items-center"
+                >
+                    <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">Status</p>
+                    <div className="h-[100px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie data={stats.pieData} innerRadius={25} outerRadius={35} paddingAngle={5} dataKey="value">
+                                    {stats.pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                                </Pie>
+                            </PieChart>
+                        </ResponsiveContainer>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-gray-300" />
-                        <span className="text-xs text-gray-600">{stats.pending} Pending</span>
+                </motion.div>
+
+                <motion.div 
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="bg-white/40 dark:bg-white/5 backdrop-blur-md p-4 rounded-3xl border border-white/60 dark:border-white/10 flex flex-col items-center"
+                >
+                    <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">Punctuality</p>
+                    <div className="h-[100px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie data={stats.punctualityData} innerRadius={25} outerRadius={35} paddingAngle={5} dataKey="value">
+                                    {stats.punctualityData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                                </Pie>
+                            </PieChart>
+                        </ResponsiveContainer>
                     </div>
-                </div>
-            </motion.div>
+                </motion.div>
+            </div>
         </div>
     );
 }
