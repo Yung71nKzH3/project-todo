@@ -8,16 +8,20 @@
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
 :root {
-  --background: hsl(220 30% 98%);
-  --foreground: hsl(224 71% 4%);
-  --card: hsla(0, 0%, 100%, 0.4);
-  --card-foreground: hsl(224 71% 4%);
-  --border: hsla(0, 0%, 100%, 0.6);
-  --muted: hsl(220 14% 96%);
-  --muted-foreground: hsl(220 10% 40%); /* Darker for light mode */
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: rgba(255, 255, 255, 0.68);
+  --card-foreground: #0f172a;
+  --border: rgba(255, 255, 255, 0.75);
+  --muted: rgba(241, 245, 249, 0.7);
+  --muted-foreground: #64748b;
+  --input: rgba(255, 255, 255, 0.75);
+  --ring: rgba(139, 92, 246, 0.4);
   
   /* Primary brand colors */
   --violet-primary: hsl(262 83% 58%);
@@ -25,24 +29,50 @@
 }
 
 .dark {
-  --background: hsl(224 71% 4%);
-  --foreground: hsl(210 20% 98%);
-  --card: hsla(224, 71%, 8%, 0.6); /* Slightly more opaque for better contrast */
-  --card-foreground: hsl(210 20% 98%);
-  --border: hsla(210, 20%, 98%, 0.15);
-  --muted: hsl(224 71% 12%);
-  --muted-foreground: hsl(215 20% 80%); /* Brighter for dark mode */
+  --background: #090714;
+  --foreground: #f8fafc;
+  --card: rgba(18, 14, 34, 0.72);
+  --card-foreground: #f8fafc;
+  --border: rgba(255, 255, 255, 0.12);
+  --muted: rgba(255, 255, 255, 0.06);
+  --muted-foreground: #94a3b8;
+  --input: rgba(255, 255, 255, 0.07);
+  --ring: rgba(167, 139, 250, 0.4);
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', system-ui, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: background-color 0.4s ease, color 0.4s ease;
+  min-height: 100vh;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure native date inputs match the active theme on all platforms */
+input[type="date"] {
+  color-scheme: light;
+}
+
+.dark input[type="date"] {
+  color-scheme: dark;
+}
+
+/* Ensure dropdown select options have correct background and text contrast */
+select option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+.dark select option {
+  background-color: #1a162b;
+  color: #f8fafc;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -50,17 +80,18 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.2);
-  border-radius: 10px;
+  background: rgba(139, 92, 246, 0.25);
+  border-radius: 9999px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.4);
+  background: rgba(139, 92, 246, 0.5);
 }
 
 /* Glassmorphism helpers */
 .glass {
   background: var(--card);
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border);
 }

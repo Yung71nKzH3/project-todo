@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useSubscriptions } from '../hooks/useSubscriptions';
 import type { Subscription } from '../hooks/useSubscriptions';
-import { Plus, Trash2, CreditCard, ExternalLink, RefreshCcw, AlertCircle, Edit2 } from 'lucide-react';
+import { Plus, Trash2, CreditCard, ExternalLink, RefreshCcw, AlertCircle, Edit2, Wallet } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '../lib/utils';
 
 export function SubscriptionsView() {
     const { subscriptions, addSubscription, removeSubscription, markAsChecked, updateSubscription } = useSubscriptions();
@@ -66,34 +67,43 @@ export function SubscriptionsView() {
         return acc + s.amount / 12;
     }, 0);
 
+    const [thirtyDaysAgo] = useState(() => Date.now() - (30 * 24 * 60 * 60 * 1000));
     const needsCheck = (lastChecked: number) => {
-        const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
         return lastChecked < thirtyDaysAgo;
     };
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-4">
-                <motion.div 
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="bg-violet-600 p-6 rounded-3xl text-white shadow-xl shadow-violet-200 dark:shadow-none"
-                >
-                    <p className="text-xs font-bold opacity-80 uppercase tracking-wider">Estimated Monthly</p>
-                    <p className="text-4xl font-bold mt-1">${totalMonthly.toFixed(2)}</p>
-                </motion.div>
-            </div>
+        <div className="space-y-5">
+            {/* Total Monthly Card */}
+            <motion.div 
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 p-6 rounded-3xl text-white shadow-xl shadow-violet-500/25 relative overflow-hidden"
+            >
+                <div className="absolute right-4 -bottom-4 opacity-15 pointer-events-none">
+                    <Wallet size={120} />
+                </div>
+                <p className="text-xs font-bold uppercase tracking-widest text-violet-100 flex items-center gap-1.5">
+                    <CreditCard size={14} />
+                    Estimated Monthly Cost
+                </p>
+                <p className="text-4xl font-black mt-1.5 tracking-tight">${totalMonthly.toFixed(2)}</p>
+                <p className="text-xs text-violet-200 mt-2 font-medium">Across {subscriptions.length} active recurring {subscriptions.length === 1 ? 'service' : 'services'}</p>
+            </motion.div>
 
+            {/* Subscriptions List Header */}
             <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white">My Subscriptions</h2>
+                <h2 className="text-xl font-extrabold text-foreground tracking-tight">Recurring Expenses</h2>
                 <button 
                     onClick={() => setShowForm(!showForm)}
-                    className="p-2 bg-white/60 dark:bg-white/10 hover:bg-white/80 dark:hover:bg-white/20 rounded-xl transition-all border border-white/40 dark:border-white/10"
+                    className="p-2 bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 rounded-xl transition-all border border-white/60 dark:border-white/10 shadow-sm"
+                    title={showForm ? "Cancel Add" : "Add Subscription"}
                 >
-                    <Plus size={20} className="text-violet-600 dark:text-violet-400" />
+                    <Plus size={19} className="text-violet-600 dark:text-violet-400 stroke-[2.5]" />
                 </button>
             </div>
 
+            {/* Add Subscription Form */}
             <AnimatePresence>
                 {showForm && (
                     <motion.form 
@@ -101,66 +111,80 @@ export function SubscriptionsView() {
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         onSubmit={handleAdd}
-                        className="space-y-3 bg-white/40 dark:bg-white/5 p-4 rounded-2xl border border-white/60 dark:border-white/10 overflow-hidden"
+                        className="space-y-3 bg-white/70 dark:bg-white/5 p-4 rounded-2xl border border-white/60 dark:border-white/10 backdrop-blur-md overflow-hidden shadow-sm"
                     >
                         <input 
                             type="text" 
-                            placeholder="Service Name (e.g. Netflix)" 
+                            placeholder="Service Name (e.g. Netflix, Spotify)" 
                             value={name}
                             onChange={e => setName(e.target.value)}
-                            className="w-full p-3 bg-white/50 dark:bg-black/20 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/30 text-sm dark:text-white"
+                            className="w-full p-3 bg-white/70 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/40 text-sm font-medium text-foreground placeholder:text-muted-foreground"
+                            required
                         />
                         <div className="flex gap-2">
                             <input 
                                 type="number" 
-                                placeholder="Amount" 
+                                step="0.01"
+                                placeholder="Amount ($)" 
                                 value={amount}
                                 onChange={e => setAmount(e.target.value)}
-                                className="flex-1 p-3 bg-white/50 dark:bg-black/20 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/30 text-sm dark:text-white"
+                                className="flex-1 p-3 bg-white/70 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/40 text-sm font-medium text-foreground placeholder:text-muted-foreground"
+                                required
                             />
                             <select 
                                 value={frequency}
-                                onChange={e => setFrequency(e.target.value as any)}
-                                className="p-3 bg-white/50 dark:bg-black/20 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/30 text-sm dark:text-white"
+                                onChange={e => setFrequency(e.target.value as Subscription['frequency'])}
+                                className="p-3 bg-white/70 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/40 text-sm font-semibold text-foreground cursor-pointer"
                             >
                                 <option value="monthly">Monthly</option>
                                 <option value="quarterly">Quarterly</option>
                                 <option value="yearly">Yearly</option>
                             </select>
                         </div>
-                        <input 
-                            type="date" 
-                            value={date}
-                            onChange={e => setDate(e.target.value)}
-                            className="w-full p-3 bg-white/50 dark:bg-black/20 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/30 text-sm dark:text-white"
-                        />
+                        <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">Next Billing Date:</label>
+                            <input 
+                                type="date" 
+                                value={date}
+                                onChange={e => setDate(e.target.value)}
+                                className="w-full p-3 bg-white/70 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/40 text-sm font-medium text-foreground cursor-pointer"
+                                required
+                            />
+                        </div>
                         <input 
                             type="url" 
-                            placeholder="URL (optional)" 
+                            placeholder="Website URL (optional)" 
                             value={url}
                             onChange={e => setUrl(e.target.value)}
-                            className="w-full p-3 bg-white/50 dark:bg-black/20 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/30 text-sm dark:text-white"
+                            className="w-full p-3 bg-white/70 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-xl outline-none focus:ring-2 focus:ring-violet-500/40 text-sm font-medium text-foreground placeholder:text-muted-foreground"
                         />
                         <button 
                             type="submit"
-                            className="w-full py-3 bg-violet-600 text-white rounded-xl font-bold hover:bg-violet-700 transition-all shadow-lg shadow-violet-100 dark:shadow-none"
+                            className="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-xl font-bold transition-all shadow-md shadow-violet-500/25 active:scale-[0.98]"
                         >
-                            Add Subscription
+                            Save Subscription
                         </button>
                     </motion.form>
                 )}
             </AnimatePresence>
 
-            <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+            {/* Subscriptions List */}
+            <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1.5 custom-scrollbar">
                 <AnimatePresence mode='popLayout'>
+                    {subscriptions.length === 0 && (
+                        <div className="text-center py-10 text-muted-foreground text-sm italic">
+                            No subscriptions tracked yet. Add one to keep your recurring expenses organized!
+                        </div>
+                    )}
+
                     {subscriptions.map(sub => (
                         <motion.div 
                             key={sub.id}
                             layout
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            className="flex flex-col gap-2 p-4 bg-white/60 dark:bg-white/5 border border-white/40 dark:border-white/10 rounded-2xl group relative"
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="flex flex-col gap-2 p-4 bg-white/65 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-2xl group relative backdrop-blur-md shadow-sm hover:shadow-md transition-all"
                         >
                             {editingId === sub.id ? (
                                 <div className="space-y-3">
@@ -168,19 +192,20 @@ export function SubscriptionsView() {
                                         type="text" 
                                         value={editName}
                                         onChange={e => setEditName(e.target.value)}
-                                        className="w-full p-2 bg-white/50 dark:bg-black/20 rounded-lg outline-none text-sm dark:text-white"
+                                        className="w-full p-2.5 bg-white/70 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-xl outline-none text-sm font-semibold text-foreground"
                                     />
                                     <div className="flex gap-2">
                                         <input 
                                             type="number" 
+                                            step="0.01"
                                             value={editAmount}
                                             onChange={e => setEditAmount(e.target.value)}
-                                            className="flex-1 p-2 bg-white/50 dark:bg-black/20 rounded-lg outline-none text-sm dark:text-white"
+                                            className="flex-1 p-2.5 bg-white/70 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-xl outline-none text-sm font-semibold text-foreground"
                                         />
                                         <select 
                                             value={editFrequency}
-                                            onChange={e => setEditFrequency(e.target.value as any)}
-                                            className="p-2 bg-white/50 dark:bg-black/20 rounded-lg outline-none text-sm dark:text-white"
+                                            onChange={e => setEditFrequency(e.target.value as Subscription['frequency'])}
+                                            className="p-2.5 bg-white/70 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-xl outline-none text-sm font-semibold text-foreground cursor-pointer"
                                         >
                                             <option value="monthly">Monthly</option>
                                             <option value="quarterly">Quarterly</option>
@@ -191,25 +216,25 @@ export function SubscriptionsView() {
                                         type="date" 
                                         value={editDate}
                                         onChange={e => setEditDate(e.target.value)}
-                                        className="w-full p-2 bg-white/50 dark:bg-black/20 rounded-lg outline-none text-sm dark:text-white"
+                                        className="w-full p-2.5 bg-white/70 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-xl outline-none text-sm font-semibold text-foreground cursor-pointer"
                                     />
                                     <input 
                                         type="url" 
                                         value={editUrl}
                                         onChange={e => setEditUrl(e.target.value)}
                                         placeholder="URL"
-                                        className="w-full p-2 bg-white/50 dark:bg-black/20 rounded-lg outline-none text-sm dark:text-white"
+                                        className="w-full p-2.5 bg-white/70 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-xl outline-none text-sm font-semibold text-foreground"
                                     />
                                     <div className="flex gap-2">
                                         <button 
                                             onClick={handleUpdate}
-                                            className="flex-1 py-2 bg-violet-600 text-white rounded-xl text-xs font-bold"
+                                            className="flex-1 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-bold transition-colors"
                                         >
-                                            Save
+                                            Save Changes
                                         </button>
                                         <button 
                                             onClick={() => setEditingId(null)}
-                                            className="px-4 py-2 bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-300 rounded-xl text-xs font-bold"
+                                            className="px-4 py-2.5 bg-muted hover:bg-muted/80 text-foreground rounded-xl text-xs font-bold transition-colors border border-border"
                                         >
                                             Cancel
                                         </button>
@@ -217,57 +242,63 @@ export function SubscriptionsView() {
                                 </div>
                             ) : (
                                 <>
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 bg-violet-100 dark:bg-violet-900/30 rounded-xl flex items-center justify-center text-violet-600 dark:text-violet-400 flex-shrink-0">
-                                            <CreditCard size={20} />
+                                    <div className="flex items-center gap-3.5">
+                                        <div className="w-10 h-10 bg-violet-500/15 text-violet-600 dark:text-violet-400 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm border border-violet-500/20">
+                                            <CreditCard size={20} className="stroke-[2.2]" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <p className="font-bold text-gray-800 dark:text-white truncate">{sub.name}</p>
+                                            <div className="flex items-center gap-1.5">
+                                                <p className="font-bold text-foreground truncate text-sm sm:text-base">{sub.name}</p>
                                                 {sub.url && (
-                                                    <a href={sub.url} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-violet-500 transition-colors">
-                                                        <ExternalLink size={14} />
+                                                    <a 
+                                                        href={sub.url} 
+                                                        target="_blank" 
+                                                        rel="noreferrer" 
+                                                        className="text-muted-foreground hover:text-violet-500 transition-colors p-0.5 rounded"
+                                                        title="Open subscription website"
+                                                    >
+                                                        <ExternalLink size={13} />
                                                     </a>
                                                 )}
                                             </div>
-                                            <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">
+                                            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
                                                 Next: {new Date(sub.nextBillingDate).toLocaleDateString()}
                                             </p>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="font-bold text-gray-800 dark:text-white">${sub.amount}</p>
-                                            <p className="text-[10px] uppercase font-bold text-violet-500 dark:text-violet-400">{sub.frequency}</p>
+                                        <div className="text-right flex-shrink-0">
+                                            <p className="font-extrabold text-foreground text-sm sm:text-base">${sub.amount.toFixed(2)}</p>
+                                            <p className="text-[10px] uppercase font-bold text-violet-600 dark:text-violet-400 bg-violet-500/10 border border-violet-500/20 px-1.5 py-0.5 rounded-md inline-block">{sub.frequency}</p>
                                         </div>
                                     </div>
                                     
-                                    <div className="flex items-center justify-between pt-2 border-t border-white/20 dark:border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex items-center gap-1">
-                                                <button 
-                                                    onClick={() => markAsChecked(sub.id)}
-                                                    className={cn(
-                                                        "p-1 rounded-md transition-colors",
-                                                        needsCheck(sub.lastChecked) ? "text-amber-500 bg-amber-500/10" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5"
-                                                    )}
-                                                    title="Mark as verified"
-                                                >
-                                                    <RefreshCcw size={10} className={needsCheck(sub.lastChecked) ? "animate-spin-slow" : ""} />
-                                                </button>
-                                                <span className="text-[8px] text-gray-400 font-bold uppercase">
-                                                    Checked: {new Date(sub.lastChecked).toLocaleDateString()}
-                                                </span>
-                                            </div>
+                                    <div className="flex items-center justify-between pt-2 border-t border-white/40 dark:border-white/10 mt-1">
+                                        <div className="flex items-center gap-2">
+                                            <button 
+                                                onClick={() => markAsChecked(sub.id)}
+                                                className={cn(
+                                                    "p-1.5 rounded-lg transition-colors flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider",
+                                                    needsCheck(sub.lastChecked) 
+                                                        ? "text-amber-600 dark:text-amber-400 bg-amber-500/15" 
+                                                        : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
+                                                )}
+                                                title="Mark as checked/verified"
+                                            >
+                                                <RefreshCcw size={12} className={needsCheck(sub.lastChecked) ? "animate-spin" : ""} />
+                                                <span>Verified: {new Date(sub.lastChecked).toLocaleDateString()}</span>
+                                            </button>
                                         </div>
-                                        <div className="flex gap-1">
+                                        <div className="flex items-center gap-1">
                                             <button 
                                                 onClick={() => startEditing(sub)}
-                                                className="p-2 text-gray-400 hover:text-violet-500 transition-all"
+                                                className="p-1.5 text-muted-foreground hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-500/10 rounded-lg transition-all"
+                                                title="Edit"
                                             >
                                                 <Edit2 size={14} />
                                             </button>
                                             <button 
                                                 onClick={() => removeSubscription(sub.id)}
-                                                className="p-2 text-gray-400 hover:text-red-500 transition-all"
+                                                className="p-1.5 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all"
+                                                title="Delete"
                                             >
                                                 <Trash2 size={14} />
                                             </button>
@@ -277,8 +308,11 @@ export function SubscriptionsView() {
                             )}
 
                             {needsCheck(sub.lastChecked) && editingId !== sub.id && (
-                                <div className="absolute -top-1 -right-1">
-                                    <AlertCircle size={14} className="text-amber-500 fill-white dark:fill-black" />
+                                <div className="absolute -top-1.5 -right-1.5">
+                                    <span className="flex h-3 w-3 relative">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                        <AlertCircle size={14} className="relative text-amber-500" />
+                                    </span>
                                 </div>
                             )}
                         </motion.div>
@@ -287,8 +321,4 @@ export function SubscriptionsView() {
             </div>
         </div>
     );
-}
-
-function cn(...classes: any[]) {
-    return classes.filter(Boolean).join(' ');
 }

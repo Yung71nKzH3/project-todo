@@ -33,9 +33,9 @@
 *   **Launch on Startup**: Configure the app to start with your computer so you're always on top of your day.
 
 ### 🎨 Premium Aesthetics
-*   **Glassmorphic UI**: Floating cards over a soothing, animated lava lamp background.
-*   **Adaptive Theming**: Full Dark and Light mode support with calibrated contrast for maximum readability.
-*   **Fluid Animations**: Powered by Framer Motion for a life-like feel.
+*   **Lava Lamp Background**: Mesmerizing, organic lava lamp animations calibrated for both vibrant Light Mode and luminous Dark Mode.
+*   **Glassmorphic UI**: Floating frosted glass cards with high-contrast, legible typography across all modes.
+*   **Fluid Animations**: Powered by Framer Motion for a life-like, tactile experience.
 
 ---
 
@@ -43,14 +43,17 @@
 
 ### Windows
 1.  Go to the [Releases](../../releases) page.
-2.  Download the latest `.exe` installer.
-3.  Run the installer and enjoy!
+2.  Download the latest `project-todo.exe` or installer.
+3.  **First-time launch (Windows SmartScreen)**:
+    Since independent open-source binaries are not signed with enterprise certificates, Windows may display a *"Windows protected your PC"* banner on first launch:
+    - Click **More info** &rarr; **Run anyway**.
+    - Or right-click the `.exe`, select **Properties**, check **Unblock** at the bottom, and click **OK**.
 
 ### Linux (Fedora/RPM)
 1.  Download the `.rpm` package from the [Releases](../../releases) page.
 2.  Install via DNF:
     ```bash
-    sudo dnf install ./lava-lamp-todo_1.0.0_x86_64.rpm
+    sudo dnf install ./lava-lamp-todo_2.0.0_x86_64.rpm
     ```
 
 ---
@@ -65,11 +68,13 @@ Built with **React 19**, **Tauri v2**, **Tailwind CSS v4**, and **Framer Motion*
 
 ### Setup
 1.  `npm install`
-2.  `npm run dev` (Web view)
-3.  `npm run tauri dev` (Desktop app)
+2.  `npm run dev` (Web view in browser)
+3.  `npm run tauri dev` (Desktop app with hot reload)
+4.  `npm run tauri build` (Build production desktop binary)
 
 ---
-*Created by Gemini Antigravity*
+
+*Created with ❤️ & Antigravity*
 
 ### 🎨 Attributions
 - <a href="https://www.flaticon.com/free-icons/pin" title="pin icons">Pin icons created by Pixel perfect - Flaticon</a>

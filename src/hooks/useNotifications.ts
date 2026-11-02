@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/plugin-notification';
 import type { Todo } from './useTodos';
 import type { Subscription } from './useSubscriptions';
@@ -21,7 +21,7 @@ export function useNotifications(todos: Todo[], subscriptions: Subscription[], e
         }
     }, []);
 
-    const checkAndNotify = async () => {
+    const checkAndNotify = useCallback(async () => {
         const permission = await isPermissionGranted();
         if (!permission) {
             const res = await requestPermission();
@@ -29,6 +29,15 @@ export function useNotifications(todos: Todo[], subscriptions: Subscription[], e
         }
 
         const now = Date.now();
+
+        const trigger = (id: string, increment: number, title: string, body: string) => {
+            if (!sentNotifications.current[id]) sentNotifications.current[id] = [];
+            if (sentNotifications.current[id].includes(increment)) return;
+
+            sendNotification({ title, body });
+            sentNotifications.current[id].push(increment);
+            localStorage.setItem(SENT_NOTIFICATIONS_KEY, JSON.stringify(sentNotifications.current));
+        };
 
         // Helper to check if we should notify for a specific target time
         const processItem = (id: string, targetTime: number, title: string, body: string) => {
@@ -64,15 +73,6 @@ export function useNotifications(todos: Todo[], subscriptions: Subscription[], e
             }
         };
 
-        const trigger = (id: string, increment: number, title: string, body: string) => {
-            if (!sentNotifications.current[id]) sentNotifications.current[id] = [];
-            if (sentNotifications.current[id].includes(increment)) return;
-
-            sendNotification({ title, body });
-            sentNotifications.current[id].push(increment);
-            localStorage.setItem(SENT_NOTIFICATIONS_KEY, JSON.stringify(sentNotifications.current));
-        };
-
         // Process Todos
         todos.forEach(todo => {
             if (todo.dueDate && !todo.completed) {
@@ -89,12 +89,12 @@ export function useNotifications(todos: Todo[], subscriptions: Subscription[], e
         subscriptions.forEach(sub => {
             processItem(sub.id, sub.nextBillingDate, 'Subscription Alert', `${sub.name} payment`);
         });
-    };
+    }, [todos, subscriptions, events]);
 
     useEffect(() => {
         // Run check every minute
         const interval = setInterval(checkAndNotify, 60 * 1000);
         checkAndNotify(); // Initial check
         return () => clearInterval(interval);
-    }, [todos, subscriptions, events]);
+    }, [checkAndNotify]);
 }

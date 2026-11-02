@@ -1,19 +1,22 @@
 import { Sun, Moon } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function ThemeToggle() {
-    const [isDark, setIsDark] = useState(false);
-
-    useEffect(() => {
-        const savedTheme = localStorage.getItem('theme');
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        
-        if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
-            document.documentElement.classList.add('dark');
-            setIsDark(true);
+    const [isDark, setIsDark] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const dark = savedTheme === 'dark' || (!savedTheme && systemPrefersDark);
+            if (dark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            return dark;
         }
-    }, []);
+        return false;
+    });
 
     const toggleTheme = () => {
         if (isDark) {
@@ -29,16 +32,38 @@ export function ThemeToggle() {
 
     return (
         <motion.button
-            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.92 }}
             onClick={toggleTheme}
-            className="p-2 bg-white/40 dark:bg-black/20 backdrop-blur-md rounded-xl border border-white/60 dark:border-white/10 transition-all hover:bg-white/60 dark:hover:bg-black/30"
-            aria-label="Toggle Theme"
+            className="relative p-2.5 bg-white/70 dark:bg-white/10 backdrop-blur-xl rounded-2xl border border-white/60 dark:border-white/15 shadow-sm hover:shadow-md transition-all text-foreground overflow-hidden group"
+            aria-label={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
         >
-            {isDark ? (
-                <Sun size={20} className="text-amber-400" />
-            ) : (
-                <Moon size={20} className="text-violet-600" />
-            )}
+            <AnimatePresence mode="wait" initial={false}>
+                {isDark ? (
+                    <motion.div
+                        key="sun"
+                        initial={{ rotate: -90, scale: 0, opacity: 0 }}
+                        animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                        exit={{ rotate: 90, scale: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
+                        className="flex items-center justify-center text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
+                    >
+                        <Sun size={20} className="stroke-[2.2]" />
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="moon"
+                        initial={{ rotate: 90, scale: 0, opacity: 0 }}
+                        animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                        exit={{ rotate: -90, scale: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
+                        className="flex items-center justify-center text-violet-600 drop-shadow-[0_0_8px_rgba(139,92,246,0.4)]"
+                    >
+                        <Moon size={20} className="stroke-[2.2]" />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </motion.button>
     );
 }

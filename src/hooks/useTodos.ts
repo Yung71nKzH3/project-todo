@@ -19,7 +19,7 @@ export function useTodos() {
             try {
                 const parsed = JSON.parse(saved);
                 if (!Array.isArray(parsed)) return [];
-                return parsed.map((todo: any) => ({
+                return (parsed as Partial<Todo & { text?: string }>[]).map((todo) => ({
                     ...todo,
                     id: todo.id || crypto.randomUUID(),
                     title: todo.title || todo.text || '',

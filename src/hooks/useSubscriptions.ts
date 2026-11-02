@@ -22,11 +22,11 @@ export function useSubscriptions() {
             try {
                 const parsed = JSON.parse(saved);
                 // Migration: add lastChecked if missing
-                return parsed.map((s: any) => ({
+                return (parsed as Partial<Subscription>[]).map((s) => ({
                     ...s,
                     lastChecked: s.lastChecked || s.createdAt || Date.now(),
                     frequency: s.frequency || 'monthly'
-                }));
+                })) as Subscription[];
             } catch {
                 return [];
             }
