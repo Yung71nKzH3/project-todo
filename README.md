@@ -30,7 +30,7 @@
 ### 🔔 Native Desktop Power
 *   **Smart Notifications**: Native alerts at 1 week, 1 day, 1 hour, and 30 minutes before deadlines.
 *   **Morning & Mid-day Reminders**: Automatic "Good Morning" and "Check-in" alerts at 9 AM and 1 PM on due dates.
-*   **Launch on Startup**: Configure the app to start with your computer so you're always on top of your day.
+*   **On-Demand Focus**: Lightweight and designed to open instantly whenever you need to plan or reflect.
 
 ### 🎨 Premium Aesthetics
 *   **Lava Lamp Background**: Mesmerizing, organic lava lamp animations calibrated for both vibrant Light Mode and luminous Dark Mode.

@@ -13,21 +13,20 @@ import { SubscriptionsView } from './SubscriptionsView';
 import { ThemeToggle } from './ThemeToggle';
 import { ConfirmationModal } from './ConfirmationModal';
 import { useNotifications } from '../hooks/useNotifications';
-import { useAutostart } from '../hooks/useAutostart';
-import { Power, Sparkles, Sliders } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { Sparkles, Sliders } from 'lucide-react';
 
 export function TodoApp() {
     const { todos, addTodo, toggleTodo, removeTodo, clearCompleted } = useTodos();
     const { subscriptions } = useSubscriptions();
     const { events, addEvent, removeEvent } = useEvents();
-    const { enabled: autostartEnabled, toggleAutostart } = useAutostart();
     
     // Initialize Notification System
     useNotifications(todos, subscriptions, events);
     
     const [currentView, setCurrentView] = useState<View>('tasks');
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+    const completedTodosCount = todos.filter(t => t.completed).length;
 
     const renderView = () => {
         switch (currentView) {
@@ -37,60 +36,41 @@ export function TodoApp() {
                 return <CalendarView todos={todos} subscriptions={subscriptions} events={events} addEvent={addEvent} removeEvent={removeEvent} />;
             case 'subscriptions':
                 return <SubscriptionsView />;
-            case 'history':
-                return <HistoryView todos={todos} subscriptions={subscriptions} removeTodo={removeTodo} />;
             case 'analytics':
                 return <AnalyticsView todos={todos} />;
             case 'settings':
                 return (
-                    <div className="space-y-6 py-2">
-                        <div className="space-y-4">
-                            {/* Autostart Toggle */}
-                            <div className="p-5 bg-white/60 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-3xl flex items-center justify-between shadow-sm backdrop-blur-md">
-                                <div className="flex items-center gap-4">
-                                    <div className={cn(
-                                        "w-11 h-11 rounded-2xl flex items-center justify-center transition-colors shadow-sm",
-                                        autostartEnabled 
-                                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30" 
-                                            : "bg-muted text-muted-foreground border border-border"
-                                    )}>
-                                        <Power size={20} className="stroke-[2.2]" />
-                                    </div>
-                                    <div className="text-left">
-                                        <p className="font-bold text-foreground text-sm">Launch on Startup</p>
-                                        <p className="text-xs text-muted-foreground">Automatically launch with your OS</p>
-                                    </div>
-                                </div>
-                                <button 
-                                    onClick={toggleAutostart}
-                                    className={cn(
-                                        "w-12 h-6 rounded-full relative transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-violet-500/50",
-                                        autostartEnabled ? "bg-emerald-500 shadow-md shadow-emerald-500/25" : "bg-muted-foreground/30"
-                                    )}
-                                    aria-label="Toggle Launch on Startup"
-                                >
-                                    <motion.div 
-                                        animate={{ x: autostartEnabled ? 26 : 2 }}
-                                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                        className="absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow-md"
-                                    />
-                                </button>
-                            </div>
-
-                            {/* Danger Zone */}
-                            <div className="p-6 bg-rose-500/10 border border-rose-500/20 rounded-3xl backdrop-blur-md">
-                                <h3 className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                                    <Sliders size={14} />
+                    <div className="space-y-6">
+                        <HistoryView 
+                            todos={todos} 
+                            subscriptions={subscriptions} 
+                            removeTodo={removeTodo} 
+                        />
+                        
+                        {/* Danger Zone: Clear Completed */}
+                        <div className="p-4 sm:p-5 bg-rose-500/10 border border-rose-500/20 rounded-2xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <h3 className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest flex items-center gap-1.5">
+                                    <Sliders size={13} />
                                     Danger Zone
                                 </h3>
-                                <p className="text-xs text-rose-600/80 dark:text-rose-300/80 mb-5">These actions cannot be reversed once confirmed.</p>
-                                <button 
-                                    onClick={() => setIsConfirmOpen(true)}
-                                    className="w-full px-6 py-3 bg-rose-500 hover:bg-rose-600 active:scale-[0.98] text-white rounded-2xl font-bold transition-all shadow-lg shadow-rose-500/25"
-                                >
-                                    Clear All Completed Tasks
-                                </button>
+                                <p className="text-xs text-rose-600/80 dark:text-rose-300/80 mt-0.5">
+                                    Permanently delete all {completedTodosCount} completed {completedTodosCount === 1 ? 'task' : 'tasks'} from the log.
+                                </p>
                             </div>
+                            <button 
+                                onClick={() => setIsConfirmOpen(true)}
+                                disabled={completedTodosCount === 0}
+                                className="px-4 py-2.5 bg-rose-500 hover:bg-rose-600 disabled:opacity-40 disabled:hover:bg-rose-500 active:scale-[0.98] text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-rose-500/20 whitespace-nowrap self-start sm:self-auto"
+                            >
+                                Clear Completed
+                            </button>
+                        </div>
+
+                        <div className="text-center pt-1 pb-2">
+                            <span className="text-[11px] font-semibold text-muted-foreground/80">
+                                Lava Lamp Todo v2.0.0 • Mindful Productivity
+                            </span>
                         </div>
 
                         <ConfirmationModal 
@@ -123,16 +103,15 @@ export function TodoApp() {
                         <header className="mb-6 flex justify-between items-start">
                             <div>
                                 <h1 className="text-3xl font-extrabold text-foreground mb-1 tracking-tight drop-shadow-sm flex items-center gap-2">
-                                    {currentView === 'history' ? 'Activity Log' : currentView.charAt(0).toUpperCase() + currentView.slice(1)}
+                                    {currentView === 'settings' ? 'Settings & Log' : currentView.charAt(0).toUpperCase() + currentView.slice(1)}
                                     {currentView === 'tasks' && <Sparkles size={20} className="text-violet-500 animate-pulse" />}
                                 </h1>
                                 <p className="text-sm text-muted-foreground font-medium">
                                     {currentView === 'tasks' && "Let's get things done today! ✨"}
                                     {currentView === 'calendar' && "Your schedule at a glance. 📅"}
                                     {currentView === 'subscriptions' && "Keep track of your recurring costs. 💸"}
-                                    {currentView === 'history' && "A timeline of your achievements. 🏆"}
                                     {currentView === 'analytics' && "Your productivity at a glance. 📊"}
-                                    {currentView === 'settings' && "Preferences & configurations. ⚙️"}
+                                    {currentView === 'settings' && "Activity history and data management. ⚙️"}
                                 </p>
                             </div>
                             <ThemeToggle />

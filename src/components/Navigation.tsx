@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
-import { ListTodo, History, BarChart3, Calendar, CreditCard, Settings } from 'lucide-react';
+import { ListTodo, BarChart3, Calendar, CreditCard, Settings } from 'lucide-react';
 import { cn } from '../lib/utils';
 
-export type View = 'tasks' | 'calendar' | 'subscriptions' | 'history' | 'analytics' | 'settings';
+export type View = 'tasks' | 'calendar' | 'subscriptions' | 'analytics' | 'settings';
 
 interface NavigationProps {
     currentView: View;
@@ -14,7 +14,6 @@ export function Navigation({ currentView, setView }: NavigationProps) {
         { id: 'tasks', icon: ListTodo, label: 'Tasks' },
         { id: 'calendar', icon: Calendar, label: 'Calendar' },
         { id: 'subscriptions', icon: CreditCard, label: 'Subs' },
-        { id: 'history', icon: History, label: 'Log' },
         { id: 'analytics', icon: BarChart3, label: 'Stats' },
         { id: 'settings', icon: Settings, label: 'Settings' },
     ] as const;
